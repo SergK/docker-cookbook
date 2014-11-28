@@ -1,0 +1,20 @@
+FROM ubuntu:14.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# we need to add jenkins user in oder to correcly processed shared folder
+RUN addgroup --gid 999 jenkins && adduser --system --uid 999 --gid 999 --home /home/jenkins --shell /bin/bash jenkins && \
+    mkdir /opt/sandbox && chown -R jenkins:jenkins /opt/sandbox
+
+# install soft that we need for buiding plugins
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y \
+      python-pip \
+      python-dev \
+      libyaml-dev \
+      createrepo \
+      rpm \
+      dpkg-dev
+
+# Install fuel-plugin-builder itself
+RUN pip install fuel-plugin-builder
