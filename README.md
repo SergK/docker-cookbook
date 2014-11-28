@@ -6,7 +6,7 @@ The list of Dockerfiles used for preparing different environment
 Structure
 ---------
 
-`/fuel`  -  [Fuel World](http://https://wiki.openstack.org/wiki/Fuel) Dockerfiles
+`/fuel`  -  [Fuel World](https://wiki.openstack.org/wiki/Fuel) Dockerfiles
 
 
 Usage
