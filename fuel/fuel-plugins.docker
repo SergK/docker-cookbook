@@ -1,28 +1,38 @@
+# environment for building/verifying fuel-plugins
+#
+# VERSION               0.0.1
+
 FROM ubuntu:14.04
+MAINTAINER Sergey Kulanov <skulanov@mirantis.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # we need to add jenkins user in oder to correcly processed shared folder
-RUN addgroup --gid 999 jenkins && adduser --system --uid 999 --gid 999 --home /home/jenkins --shell /bin/bash jenkins && \
-    mkdir /opt/sandbox && chown -R jenkins:jenkins /opt/sandbox
+RUN addgroup --gid 999 jenkins && \
+    adduser --system --uid 999 --gid 999 --home /home/jenkins --shell /bin/bash jenkins && \
+    mkdir /opt/sandbox && \
+    chown -R jenkins:jenkins /opt/sandbox
 
 # we need devops repo for python2.6
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D5A05778 && \
     echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" | sudo tee /etc/apt/sources.list.d/fuel-devops.list
 # install soft that we need for buiding plugins
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y rpm \
-      wget \
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
       createrepo \
       dpkg-dev \
+      gcc \
       libyaml-dev \
       make \
-      python-dev \
+      rpm \
       ruby-dev \
-      gcc \
+      python-dev \
       python2.6 \
       python2.6-dev \
       python-tox \
-      python-virtualenv
+      python-virtualenv \
+      wget
 
+# we also need gem
 RUN gem install --no-rdoc --no-ri fpm
