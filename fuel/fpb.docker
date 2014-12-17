@@ -20,6 +20,7 @@ RUN apt-get update && \
     apt-get install -y \
       createrepo \
       dpkg-dev \
+      git \
       libyaml-dev \
       rpm \
       python-pip \

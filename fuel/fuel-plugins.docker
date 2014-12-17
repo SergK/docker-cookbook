@@ -22,6 +22,7 @@ RUN apt-get update && \
     apt-get install -y \
       createrepo \
       dpkg-dev \
+      git \
       gcc \
       libyaml-dev \
       make \
