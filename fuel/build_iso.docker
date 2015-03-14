@@ -1,0 +1,24 @@
+# environment for building fuel-plugins
+# using fpb tool from PyPi fuel-plugin-builder
+#
+# VERSION               0.0.1
+
+FROM ubuntu:14.04
+MAINTAINER Sergey Kulanov <skulanov@mirantis.com>
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# we need to add jenkins user in oder to correcly processed shared folder
+RUN addgroup --gid 999 jenkins && \
+    adduser --system --uid 999 --gid 999 --home /home/jenkins --shell /bin/bash jenkins && \
+    mkdir /opt/sandbox && \
+    chown -R jenkins:jenkins /opt/sandbox
+
+# install soft that we need for buiding plugins
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+      git
+
+RUN git clone https://github.com/stackforge/fuel-main && \
+    cd fuel-main && ./prepare-build-env.sh

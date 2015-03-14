@@ -1,0 +1,32 @@
+# environment for testing jjb for fuel-projects
+#
+# VERSION               0.0.1
+
+FROM ubuntu:14.04
+MAINTAINER Sergey Kulanov <skulanov@mirantis.com>
+
+USER root
+ENV DEBIAN_FRONTEND noninteractive
+
+
+RUN apt-get update && apt-get install -y curl && \
+    echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" >> /etc/apt/sources.list.d/devops.list && \
+    echo "deb http://pkg.jenkins-ci.org/debian-stable binary/" >> /etc/apt/sources.list.d/devops.list && \
+    curl -s http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key | apt-key add - && \
+    curl -s http://mirror.fuel-infra.org/devops/ubuntu/Release.key | apt-key add - && \
+    mkdir -p /var/lib/jenkins/plugins && \
+    apt-get update && \
+    apt-get -y install build-essential make git ruby ruby-dev debootstrap createrepo \
+    python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
+    python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
+    python-pip kpartx extlinux unzip genisoimage sudo jenkins-plugins \
+    lrzip python-daemon python-dev && \
+    echo "jenkins  ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/build_fuel_iso
+
+ENV JENKINS_HOME /var/lib/jenkins
+
+ENTRYPOINT ["/usr/bin/java", "-Djava.awt.headless=true", "-jar", "/usr/share/jenkins/jenkins.war", "--webroot=/var/cache/jenkins/war --httpPort=8080 --ajp13Port=-1"]
+EXPOSE 8080
+CMD [""]
+
+USER jenkins
