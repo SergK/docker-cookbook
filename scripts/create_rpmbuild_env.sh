@@ -14,6 +14,7 @@ SANDBOX_PACKAGES="bash ruby rpm-build tar python-setuptools python-pbr shadow-ut
 TMPDIR=/var/tmp/docker_root
 
 # we need to add user who is going to build packages, usually jenkins
+GID=$(id -g)
 nGID=$(id -gn)
 nUID=$(id -un)
 
@@ -100,7 +101,8 @@ rm -rf "${dir}"
 sudo umount "${TMPDIR}"
 
 # saving image
-docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
+#docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
+docker save "${TAG}" | xz > /var/tmp/fuel-rpmbuild_env.tar.xz
 
 # clearing docker env
 #docker rmi scratch
