@@ -10,8 +10,9 @@
 TAG=fuel/rpmbuild_env
 # packages
 SANDBOX_PACKAGES="bash ruby rpm-build tar python-setuptools python-pbr shadow-utils"
+
 # centos mirror
-CENTOS_MIRROR=http://mirror.fuel-infra.org/fwm/6.1/centos/os/x86_64/
+CENTOS_MIRROR=${MIRROR:-http://mirror.fuel-infra.org/fwm/6.1/centos/os/x86_64/}
 
 # path where we create our chroot and build docker
 TMPDIR=/var/tmp/docker_root
@@ -20,9 +21,6 @@ TMPDIR=/var/tmp/docker_root
 GID=$(id -g)
 nGID=$(id -gn)
 nUID=$(id -un)
-
-
-
 
 mkdir -p "${TMPDIR}"
 
@@ -108,7 +106,7 @@ sudo umount "${TMPDIR}"
 
 # saving image
 #docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
-docker save "${TAG}" | xz > /var/tmp/fuel-rpmbuild_env.tar.xz
+docker save "${TAG}" | xz > ${ARTS_DIR:-/var/tmp}/fuel-rpmbuild_env.tar.xz
 
 # clearing docker env
 #docker rmi scratch
