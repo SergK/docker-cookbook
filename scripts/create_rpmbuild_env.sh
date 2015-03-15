@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # This script will create docker image, that can be used
 # for building rpm packages
