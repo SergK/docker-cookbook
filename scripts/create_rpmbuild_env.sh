@@ -56,51 +56,51 @@ EOF
 echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" | sudo tee "${rootfsDir}/etc/resolv.conf"
 
 
-# # download centos-release
-# yumdownloader --resolve --archlist=x86_64 \
-# -c "${rootfsDir}/etc/yum.conf" \
-# --destdir=${dir} centos-release
-# sudo rpm -i --root "${rootfsDir}" $(find ${dir} -maxdepth 1 -name "centos-release*rpm" | head -1) || \
-# echo "centos-release already installed"
-# sudo rm -f "${rootfsDir}"/etc/yum.repos.d/Cent*
-# echo 'Rebuilding RPM DB'
-# sudo rpm --root="${rootfsDir}" --rebuilddb
-# echo 'Installing packages for Sandbox'
-# sudo /bin/sh -c "export TMPDIR=${rootfsDir}/tmp/yum TMP=${rootfsDir}/tmp/yum ; yum -c ${rootfsDir}/etc/yum.conf --installroot=${rootfsDir} -y --nogpgcheck install ${SANDBOX_PACKAGES}"
+# download centos-release
+yumdownloader --resolve --archlist=x86_64 \
+-c "${rootfsDir}/etc/yum.conf" \
+--destdir=${dir} centos-release
+sudo rpm -i --root "${rootfsDir}" $(find ${dir} -maxdepth 1 -name "centos-release*rpm" | head -1) || \
+echo "centos-release already installed"
+sudo rm -f "${rootfsDir}"/etc/yum.repos.d/Cent*
+echo 'Rebuilding RPM DB'
+sudo rpm --root="${rootfsDir}" --rebuilddb
+echo 'Installing packages for Sandbox'
+sudo /bin/sh -c "export TMPDIR=${rootfsDir}/tmp/yum TMP=${rootfsDir}/tmp/yum ; yum -c ${rootfsDir}/etc/yum.conf --installroot=${rootfsDir} -y --nogpgcheck install ${SANDBOX_PACKAGES}"
 
-# # Docker mounts tmpfs at /dev and procfs at /proc so we can remove them
-# sudo rm -rf "$rootfsDir/dev" "$rootfsDir/proc"
-# sudo mkdir -p "$rootfsDir/dev" "$rootfsDir/proc"
+# Docker mounts tmpfs at /dev and procfs at /proc so we can remove them
+sudo rm -rf "$rootfsDir/dev" "$rootfsDir/proc"
+sudo mkdir -p "$rootfsDir/dev" "$rootfsDir/proc"
 
-# #let's pack rootfs
-# tarFile="${dir}/rootfs.tar.xz"
-# sudo touch "${tarFile}"
+#let's pack rootfs
+tarFile="${dir}/rootfs.tar.xz"
+sudo touch "${tarFile}"
 
-# sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,,' .
+sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,,' .
 
-# # prepare for building docker
-# cat > "${dir}/Dockerfile" <<EOF
-# FROM scratch
-# ADD rootfs.tar.xz /
+# prepare for building docker
+cat > "${dir}/Dockerfile" <<EOF
+FROM scratch
+ADD rootfs.tar.xz /
 
-# RUN groupadd --gid ${GID} ${nGID} && \
-#     useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
-#     mkdir /opt/sandbox && \
-#     chown -R ${UID}:${GID} /opt/sandbox
-# EOF
+RUN groupadd --gid ${GID} ${nGID} && \
+    useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
+    mkdir /opt/sandbox && \
+    chown -R ${UID}:${GID} /opt/sandbox
+EOF
 
-# # cleaning rootfs
-# sudo rm -rf "$rootfsDir"
+# cleaning rootfs
+sudo rm -rf "$rootfsDir"
 
-# # creating docker image
-# docker build -t "${TAG}" "${dir}"
+# creating docker image
+docker build -t "${TAG}" "${dir}"
 
-# # cleaning all
-# rm -rf "${dir}"
-# sudo umount "${TMPDIR}"
+# cleaning all
+rm -rf "${dir}"
+sudo umount "${TMPDIR}"
 
 # saving image
-#docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
+docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
 
 # clearing docker env
 #docker rmi scratch
