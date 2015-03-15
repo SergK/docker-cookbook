@@ -9,20 +9,23 @@
 # docker image name
 TAG=fuel/rpmbuild_env
 # packages
-SANDBOX_PACKAGES="bash ruby rpm-build tar python-setuptools python-pbr"
+SANDBOX_PACKAGES="bash ruby rpm-build tar python-setuptools python-pbr shadow-utils"
 # path where we create our chroot and build docker
-dir=
-
 TMPDIR=/var/tmp/docker_root
+
+# we need to add user who is going to build packages, usually jenkins
+GID=$(id -g)
+UID=$(id -u)
+nGID=$(id -gn)
+nUID=$(id -un)
 
 mkdir "${TMPDIR}"
 
+# let's make all stuff on tmpfs
 sudo mount -n -t tmpfs -o size=768M docker_chroot "${TMPDIR}"
 
 # creating chroot env
-if [ -z "${dir}" ]; then
-  dir="$(mktemp -d ${TMPDIR:-/var/tmp}/docker-mkimage.XXXXXXXXXX)"
-fi
+dir="$(mktemp -d ${TMPDIR:-/var/tmp}/docker-image.XXXXXXXXXX)"
 
 rootfsDir="${dir}/rootfs"
 sudo mkdir -p "${rootfsDir}"
@@ -56,9 +59,14 @@ sudo touch "${tarFile}"
 sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,,' .
 
 # prepare for building docker
-cat > "${dir}/Dockerfile" <<'EOF'
+cat > "${dir}/Dockerfile" <<EOF
 FROM scratch
 ADD rootfs.tar.xz /
+
+RUN groupadd --gid ${GID} ${nGID} && \
+    useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
+    mkdir /opt/sandbox && \
+    chown -R ${UID}:${GID} /opt/sandbox
 EOF
 
 # cleaning rootfs
