@@ -39,8 +39,8 @@ echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" | sudo tee "${rootfsDir}/etc/re
 # download centos-release
 yumdownloader --resolve --archlist=x86_64 \
 -c "${rootfsDir}/etc/yum.conf" \
---destdir=/tmp centos-release
-sudo rpm -i --root "${rootfsDir}" $(find /tmp/ -maxdepth 1 -name "centos-release*rpm" | head -1) || \
+--destdir=${dir} centos-release
+sudo rpm -i --root "${rootfsDir}" $(find ${dir} -maxdepth 1 -name "centos-release*rpm" | head -1) || \
 echo "centos-release already installed"
 sudo rm -f "${rootfsDir}"/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
