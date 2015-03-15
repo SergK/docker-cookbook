@@ -3,6 +3,8 @@
 # This script will create docker image, that can be used
 # for building rpm packages
 
+# ISSUES, docker 1.3.2 has issues with xz, so we use gz
+
 # Some part of the code was adopted from
 # https://github.com/docker/docker/blob/master/contrib/mkimage.sh
 
@@ -78,7 +80,7 @@ sudo rm -rf "$rootfsDir/dev" "$rootfsDir/proc"
 sudo mkdir -p "$rootfsDir/dev" "$rootfsDir/proc"
 
 #let's pack rootfs
-tarFile="${dir}/rootfs.tar.xz"
+tarFile="${dir}/rootfs.tar.gz"
 sudo touch "${tarFile}"
 
 sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,,' .
@@ -86,7 +88,7 @@ sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,
 # prepare for building docker
 cat > "${dir}/Dockerfile" <<EOF
 FROM scratch
-ADD rootfs.tar.xz /
+ADD rootfs.tar.gz /
 
 RUN groupadd --gid ${GID} ${nGID} && \
     useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
