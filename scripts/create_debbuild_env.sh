@@ -1,52 +1,65 @@
 #!/bin/bash -x
 
 # This script will create docker base image, that can be used
-# for creating ubuntu mirror and building deb packages
-# This script and ubuntu env should be universal as much as possible
-# and shouldn't depend on Make process.
+# for building deb packages
 
 # Some part of the code was adopted from
 # https://github.com/docker/docker/blob/master/contrib/mkimage.sh
 
 # docker image name
-TAG=fuel/ubuntu
+TAG=fuel/rpmbuild_env
+# packages
+SANDBOX_PACKAGES="wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot"
+
+# ubuntu mirror
+UBUNTU_MIRROR=${MIRROR:-http://mirror.fuel-infra.org/fwm/6.1/ubuntu/}
+UBUNTU_RELEASE=trusty
+
 # path where we create our chroot and build docker
-dir=
+TMPDIR=/var/tmp/docker_root
 
-if [ -z $1 ]; then
-  echo "Please, provide path to multistrap.conf file"
-  exit 1
-fi
+# we need to add user who is going to build packages, usually jenkins
+GID=$(id -g)
+nGID=$(id -gn)
+nUID=$(id -un)
 
-MULTISTRAP_CONF=$1
+mkdir -p "${TMPDIR}"
+
+# let's make all stuff on tmpfs
+sudo mount -n -t tmpfs -o size=768M docker_chroot "${TMPDIR}"
 
 # creating chroot env
-if [ -z "${dir}" ]; then
-  dir="$(mktemp -d ${TMPDIR:-/var/tmp}/docker-mkimage.XXXXXXXXXX)"
-fi
+dir="$(mktemp -d ${TMPDIR:-/var/tmp}/docker-image.XXXXXXXXXX)"
 
 rootfsDir="${dir}/rootfs"
 sudo mkdir -p "${rootfsDir}"
 
-# run multistrap
-sudo mkdir -p "${rootfsDir}/proc"
-sudo mount -t proc none "${rootfsDir}/proc"
-sudo multistrap -a amd64  -f "${MULTISTRAP_CONF}" -d "${rootfsDir}"
-sudo chroot "${rootfsDir}" /bin/bash -c "dpkg --configure -a || exit 0"
-sudo chroot "${rootfsDir}" /bin/bash -c "rm -rf /var/run/*"
-sudo chroot "${rootfsDir}" /bin/bash -c "dpkg --configure -a || exit 0"
-sudo umount "${rootfsDir}/proc"
-sudo rm -f "${rootfsDir}"/etc/apt/sources.list.d/*.list
+sudo mkdir -p ${rootfsDir}/usr/sbin
+sudo bash -c "cat > ${rootfsDir}/usr/sbin/policy-rc.d" <<EOF
+#!/bin/sh
+# suppress services start in the staging chroots
+exit 101
+EOF
+sudo chmod 755 ${rootfsDir}/usr/sbin/policy-rc.d
+sudo mkdir -p ${rootfsDir}/etc/init.d
+sudo touch ${rootfsDir}/etc/init.d/.legacy-bootordering
 
-# Docker mounts tmpfs at /dev and procfs at /proc so we can remove them
-sudo rm -rf "${rootfsDir}/dev" "${rootfsDir}/proc"
-sudo mkdir -p "${rootfsDir}/dev" "${rootfsDir}/proc"
+echo "Running debootstrap"
+sudo debootstrap --no-check-gpg --arch=amd64 ${UBUNTU_RELEASE} ${rootfsDir} ${UBUNTU_MIRROR}
+sudo cp /etc/resolv.conf ${rootfsDir}/etc/resolv.conf
+echo "Generating utf8 locale"
+sudo chroot ${rootfsDir} /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
 
-# let's put dns
-echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" | sudo tee "${rootfsDir}/etc/resolv.conf"
+echo "Allowing using unsigned repos"
+echo "APT::Get::AllowUnauthenticated 1;" | sudo tee ${rootfsDir}/etc/apt/apt.conf.d/02mirantis-unauthenticated
+echo "Updating apt package database"
+sudo chroot ${rootfsDir} apt-get update
+echo "Installing additional packages: ${SANDBOX_PACKAGES})"
+test -n "${SANDBOX_PACKAGES}" && sudo chroot ${rootfsDir} apt-get install --yes ${SANDBOX_PACKAGES}
+echo "chroot: done"
 
 # let's pack rootfs
-tarFile="${dir}/rootfs.tar.xz"
+tarFile="${dir}/rootfs.tar.gz"
 sudo touch "${tarFile}"
 
 sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,,' .
@@ -54,7 +67,18 @@ sudo tar --numeric-owner -caf "${tarFile}" -C "${rootfsDir}" --transform='s,^./,
 # prepare for building docker
 cat > "${dir}/Dockerfile" <<'EOF'
 FROM scratch
-ADD rootfs.tar.xz /
+ADD rootfs.tar.gz /
+EOF
+
+# prepare for building docker
+cat > "${dir}/Dockerfile" <<EOF
+FROM scratch
+ADD rootfs.tar.gz /
+
+RUN groupadd --gid ${GID} ${nGID} && \
+    useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
+    mkdir /opt/sandbox && \
+    chown -R ${UID}:${GID} /opt/sandbox
 EOF
 
 # cleaning rootfs
@@ -65,10 +89,12 @@ docker build -t "${TAG}" "${dir}"
 
 # cleaning all
 rm -rf "${dir}"
+sudo umount "${TMPDIR}"
 
 # saving image
-docker save "${TAG}" | pxz > /var/tmp/fuel-ubuntu.tar.xz
+#docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
+docker save "${TAG}" | xz > ${ARTS_DIR:-/var/tmp}/fuel-debbuild_env.tar.xz
 
 # clearing docker env
-docker rmi scratch
-docker rmi "${TAG}"
+#docker rmi scratch
+#docker rmi "${TAG}"

@@ -38,7 +38,7 @@ sudo mkdir -p "${rootfsDir}"
 # prepare base files
 sudo mkdir -p "${rootfsDir}/etc/yum.repos.d"
 
-sudo bash -c "cat > ${rootfsDir}/etc/yum.conf" << EOF
+sudo bash -c "cat > ${rootfsDir}/etc/yum.conf" <<EOF
 [main]
 cachedir=/var/cache/yum
 keepcache=0
@@ -58,10 +58,10 @@ name=Mirantis mirror
 baseurl=${CENTOS_MIRROR}
 gpgcheck=0
 enabled=1
-
 EOF
-echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" | sudo tee "${rootfsDir}/etc/resolv.conf"
 
+# configure dns
+sudo cp /etc/resolv.conf ${rootfsDir}/etc/resolv.conf
 
 # download centos-release
 yumdownloader --resolve --archlist=x86_64 \
