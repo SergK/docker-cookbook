@@ -7,7 +7,7 @@
 # https://github.com/docker/docker/blob/master/contrib/mkimage.sh
 
 # docker image name
-TAG=fuel/rpmbuild_env
+TAG=fuel/debbuild_env
 # packages
 SANDBOX_PACKAGES="wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot"
 
