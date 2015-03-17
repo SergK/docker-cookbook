@@ -60,7 +60,8 @@ echo "chroot: done"
 
 # put building script in docker
 sudo mkdir ${rootfsDir}/opt/sandbox
-sudo cp build_deb_in_docker.sh ${rootfsDir}/opt/sandbox
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+sudo cp ${DIR}/build_deb_in_docker.sh ${rootfsDir}/opt/sandbox
 
 # let's pack rootfs
 tarFile="${dir}/rootfs.tar.gz"
