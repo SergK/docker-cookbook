@@ -92,7 +92,7 @@ ADD rootfs.tar.gz /
 
 RUN groupadd --gid ${GID} ${nGID} && \
     useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
-    mkdir /opt/sandbox && \
+    mkdir -p /opt/sandbox && \
     chown -R ${UID}:${GID} /opt/sandbox
 EOF
 

@@ -58,6 +58,10 @@ echo "Installing additional packages: ${SANDBOX_PACKAGES})"
 test -n "${SANDBOX_PACKAGES}" && sudo chroot ${rootfsDir} apt-get install --yes ${SANDBOX_PACKAGES}
 echo "chroot: done"
 
+# put building script in docker
+sudo mkdir ${rootfsDir}/opt/sandbox
+sudo cp build_deb_in_docker.sh ${rootfsDir}/opt/sandbox
+
 # let's pack rootfs
 tarFile="${dir}/rootfs.tar.gz"
 sudo touch "${tarFile}"
@@ -77,7 +81,7 @@ ADD rootfs.tar.gz /
 
 RUN groupadd --gid ${GID} ${nGID} && \
     useradd --system --uid ${UID} --gid ${GID} --home /opt/sandbox --shell /bin/bash ${nUID} && \
-    mkdir /opt/sandbox && \
+    mkdir -p /opt/sandbox && \
     chown -R ${UID}:${GID} /opt/sandbox
 EOF
 
