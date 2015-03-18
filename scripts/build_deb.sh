@@ -1,9 +1,12 @@
 #!/bin/bash
 
+# This is an example how can we use docker debbuild_env to build DEB packages
+# in Fuel project
+
 set -ex
 
-SOURCE_PATH=/home/skulanov/projects/fuel-main/build/packages/sources/
-SPEC_PATH=/home/skulanov/projects/fuel-main/packages/deb/specs/
+SOURCE_PATH=${HOME}/projects/fuel-main/build/packages/sources/
+SPEC_PATH=${HOME}/projects/fuel-main/packages/deb/specs/
 RESULT_DIR=/tmp/packages
 
 docker run -v ${SOURCE_PATH}:/opt/sandbox/SOURCES \
