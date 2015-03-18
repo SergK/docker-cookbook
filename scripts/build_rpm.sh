@@ -12,10 +12,11 @@ RESULT_DIR=/tmp/packages
 rm -rf ${RESULT_DIR}
 mkdir -p ${RESULT_DIR}
 
-for pckgs in $(ls ${SPEC_FILE_PATH}); do
-docker run -v ${SOURCE_PATH}/${pckgs%.*}:/opt/sandbox/SOURCES \
+for pckgs in $(ls ${SOURCE_PATH}); do
+docker run -v ${SOURCE_PATH}/${pckgs}:/opt/sandbox/SOURCES \
+             -v ${SPEC_FILE_PATH}/${pckgs}.spec:/opt/sandbox/$(basename ${pckgs}).spec \
              -v ${SPEC_FILE_PATH}/${pckgs}:/opt/sandbox/${pckgs} \
              -v ${RESULT_DIR}:/opt/sandbox/RPMS \
              -u ${UID} \
-             -t -i fuel/rpmbuild_env rpmbuild --nodeps -vv --define "_topdir /opt/sandbox" -ba /opt/sandbox/${pckgs}
+             -t -i fuel/rpmbuild_env rpmbuild --nodeps -vv --define "_topdir /opt/sandbox" -ba /opt/sandbox/$(basename ${pckgs}).spec
 done
