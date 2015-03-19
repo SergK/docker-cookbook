@@ -98,7 +98,7 @@ sudo umount "${TMPDIR}"
 
 # saving image
 #docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
-docker save "${TAG}" | xz > ${ARTS_DIR:-/var/tmp}/fuel-debbuild_env.tar.xz
+docker save "${TAG}" | gzip > ${ARTS_DIR:-/var/tmp}/fuel-debbuild_env.tar.gz
 
 # clearing docker env
 #docker rmi scratch
