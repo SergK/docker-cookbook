@@ -9,7 +9,8 @@ USER root
 ENV DEBIAN_FRONTEND noninteractive
 
 
-RUN apt-get update && apt-get install -y curl && \
+RUN sed -i 's/archive\./ua\.archive\./g' /etc/apt/sources.list && \
+    apt-get update && apt-get install -y curl && \
     echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" >> /etc/apt/sources.list.d/devops.list && \
     echo "deb http://pkg.jenkins-ci.org/debian-stable binary/" >> /etc/apt/sources.list.d/devops.list && \
     curl -s http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key | apt-key add - && \
