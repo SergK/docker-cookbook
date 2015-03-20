@@ -14,7 +14,7 @@ TAG=fuel/rpmbuild_env
 SANDBOX_PACKAGES="bash ruby rpm-build tar python-setuptools python-pbr shadow-utils"
 
 # centos mirror
-CENTOS_MIRROR=${MIRROR:-http://mirror.fuel-infra.org/fwm/6.1/centos/os/x86_64/}
+MIRROR=${CENTOS_MIRROR:-http://mirror.fuel-infra.org/fwm/6.1/centos/os/x86_64/}
 
 # path where we create our chroot and build docker
 TMPDIR=/var/tmp/docker_root
@@ -55,7 +55,7 @@ reposdir=/etc/yum.repos.d
 
 [mirror]
 name=Mirantis mirror
-baseurl=${CENTOS_MIRROR}
+baseurl=${MIRROR}
 gpgcheck=0
 enabled=1
 EOF

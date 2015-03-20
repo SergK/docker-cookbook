@@ -12,7 +12,7 @@ TAG=fuel/debbuild_env
 SANDBOX_PACKAGES="wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot"
 
 # ubuntu mirror
-UBUNTU_MIRROR=${MIRROR:-http://mirror.fuel-infra.org/fwm/6.1/ubuntu/}
+MIRROR=${UBUNTU_MIRROR:-http://mirror.fuel-infra.org/fwm/6.1/ubuntu/}
 UBUNTU_RELEASE=trusty
 
 # path where we create our chroot and build docker
@@ -45,7 +45,7 @@ sudo mkdir -p ${rootfsDir}/etc/init.d
 sudo touch ${rootfsDir}/etc/init.d/.legacy-bootordering
 
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --arch=amd64 ${UBUNTU_RELEASE} ${rootfsDir} ${UBUNTU_MIRROR}
+sudo debootstrap --no-check-gpg --arch=amd64 ${UBUNTU_RELEASE} ${rootfsDir} ${MIRROR}
 sudo cp /etc/resolv.conf ${rootfsDir}/etc/resolv.conf
 echo "Generating utf8 locale"
 sudo chroot ${rootfsDir} /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
