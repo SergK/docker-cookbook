@@ -13,7 +13,7 @@ rm -rf ${RESULT_DIR}
 mkdir -p ${RESULT_DIR}
 
 for pckgs in $(ls ${SOURCE_PATH}); do
-docker run -v ${SOURCE_PATH}/${pckgs}:/opt/sandbox/SOURCES \
+docker run --rm -v ${SOURCE_PATH}/${pckgs}:/opt/sandbox/SOURCES \
            -v ${SPEC_FILE_PATH}/${pckgs}.spec:/opt/sandbox/$(basename ${pckgs}).spec \
            -v ${RESULT_DIR}:/opt/sandbox/RPMS \
            -u ${UID} \

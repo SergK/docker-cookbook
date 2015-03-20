@@ -1,4 +1,6 @@
-#!/bin/bash -x
+#!/bin/bash
+
+set -ex
 
 # This script will create docker base image, that can be used
 # for building deb packages
@@ -98,7 +100,9 @@ sudo umount "${TMPDIR}"
 
 # saving image
 #docker save "${TAG}" | pxz > /var/tmp/fuel-rpmbuild_env.tar.xz
-docker save "${TAG}" | gzip > ${ARTS_DIR:-/var/tmp}/fuel-debbuild_env.tar.gz
+if [ "${DOCKER_SAVE}" == "yes" ]; then
+  docker save "${TAG}" | gzip > ${ARTS_DIR:-/var/tmp}/fuel-debbuild_env.tar.gz
+fi
 
 # clearing docker env
 #docker rmi scratch
