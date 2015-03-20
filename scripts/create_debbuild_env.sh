@@ -28,7 +28,7 @@ nUID=$(id -un)
 mkdir -p "${TMPDIR}"
 
 # let's make all stuff on tmpfs
-sudo mount -n -t tmpfs -o size=768M docker_chroot "${TMPDIR}"
+sudo mount -n -t tmpfs -o size=2048M docker_chroot "${TMPDIR}"
 
 # creating chroot env
 dir="$(mktemp -d ${TMPDIR:-/var/tmp}/docker-image.XXXXXXXXXX)"
