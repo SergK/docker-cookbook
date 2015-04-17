@@ -5,11 +5,12 @@
 
 set -ex
 
-SOURCE_PATH=${HOME}/projects/fuel-main/build/packages/sources/
-SPEC_PATH=${HOME}/projects/fuel-main/packages/deb/specs/
-RESULT_DIR=/tmp/packages
+PACKAGES_TO_BUILD="astute fuel-library6.1 nailgun"
+SOURCE_PATH=${HOME}/test/fuel-main/build/packages/sources/
+RESULT_DIR=/tmp/packages_deb
 
-docker run --rm -v ${SOURCE_PATH}:/opt/sandbox/SOURCES \
-           -v ${SPEC_PATH}:/opt/sandbox/SPECS \
+for pckgs in ${PACKAGES_TO_BUILD}; do
+docker run --rm -u $UID -v ${SOURCE_PATH}/${pckgs}:/opt/sandbox/SOURCES \
            -v ${RESULT_DIR}:/opt/sandbox/DEB \
            fuel/debbuild_env /bin/bash /opt/sandbox/build_deb_in_docker.sh
+done

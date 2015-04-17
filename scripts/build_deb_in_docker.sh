@@ -1,13 +1,20 @@
 #!/bin/bash
 
-set -x
+# This script runs inside docker env, please check build_deb.sh file
+# for required input data
 
-for pkgs in $(ls /opt/sandbox/SPECS/); do
-  mkdir /tmp/${pkgs}
-  cp -rv /opt/sandbox/SOURCES/${pkgs}/* /tmp/${pkgs}/
-  cp -rv /opt/sandbox/SPECS/${pkgs}/* /tmp/${pkgs}/
-  dpkg-checkbuilddeps /opt/sandbox/SPECS/${pkgs}/debian/control 2>&1 | sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | sed 's/([^()]*)//g;s/|//g' | tee /tmp/${pkgs}.installdeps
-  /bin/sh -c "cat /tmp/${pkgs}.installdeps | xargs apt-get -y install"
-  /bin/sh -c "cd /tmp/${pkgs} ; DEB_BUILD_OPTIONS=nocheck debuild -us -uc -b -d"
-  cp -v /tmp/*${pkgs}*.deb /opt/sandbox/DEB
-done
+set -ex
+
+mkdir -p /tmp/package
+
+# since we have specs in repo we can prepare for build faster
+# just unpack prepared sources
+tar -xzf /opt/sandbox/SOURCES/*gz -C /tmp/package
+
+dpkg-checkbuilddeps /tmp/package/debian/control 2>&1 | \
+  sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | \
+  sed 's/([^()]*)//g;s/|//g' | tee /tmp/package.installdeps
+
+/bin/sh -c "cat /tmp/package.installdeps | xargs --no-run-if-empty sudo apt-get -y install"
+/bin/sh -c "cd /tmp/package ; DEB_BUILD_OPTIONS=nocheck debuild -us -uc -b -d"
+cp -v /tmp/*.deb /opt/sandbox/DEB
