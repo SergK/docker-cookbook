@@ -16,13 +16,8 @@ RUN sed -i 's/archive\./ua\.archive\./g' /etc/apt/sources.list && \
     curl -s http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key | apt-key add - && \
     curl -s http://mirror.fuel-infra.org/devops/ubuntu/Release.key | apt-key add - && \
     mkdir -p /var/lib/jenkins/plugins && \
-    apt-get update && \
-    apt-get -y install build-essential make git ruby ruby-dev debootstrap createrepo \
-    python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
-    python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
-    python-pip kpartx extlinux unzip genisoimage sudo jenkins-plugins \
-    lrzip python-daemon python-dev && \
-    echo "jenkins  ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/build_fuel_iso
+    apt-get update && apt-get -y install jenkins-plugins
+
 
 ENV JENKINS_HOME /var/lib/jenkins
 
